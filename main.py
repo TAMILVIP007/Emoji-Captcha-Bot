@@ -29,17 +29,18 @@ async def welcome_handler(bot: Client, event: Message):
         return
     try:
         user_ = await bot.get_chat_member(event.chat.id, event.from_user.id)
-        if (user_.is_member is False) and (CaptchaDB.get(event.from_user.id, None) is not None):
-            try:
-                await bot.delete_messages(
-                    chat_id=event.chat.id,
-                    message_ids=CaptchaDB[event.from_user.id]["message_id"]
-                )
-            except:
-                pass
-            return
-        elif (user_.is_member is False) and (CaptchaDB.get(event.from_user.id, None) is None):
-            return
+        if user_.is_member is False:
+            if CaptchaDB.get(event.from_user.id, None) is not None:
+                try:
+                    await bot.delete_messages(
+                        chat_id=event.chat.id,
+                        message_ids=CaptchaDB[event.from_user.id]["message_id"]
+                    )
+                except:
+                    pass
+                return
+            elif CaptchaDB.get(event.from_user.id, None) is None:
+                return
     except UserNotParticipant:
         return
     try:
@@ -71,10 +72,18 @@ async def welcome_handler(bot: Client, event: Message):
             await bot.send_message(
                 chat_id=event.chat.id,
                 text=f"{event.from_user.mention}, to chat here, please verify that you are not a robot.",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Verify Now", callback_data=f"startVerify_{str(event.from_user.id)}")]
-                ])
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                "Verify Now",
+                                callback_data=f'startVerify_{event.from_user.id}',
+                            )
+                        ]
+                    ]
+                ),
             )
+
     except:
         pass
 
@@ -121,18 +130,33 @@ async def buttons_handlers(bot: Client, cb: CallbackQuery):
                 count = 0
                 print("Appending to ROW - 1")
                 for _ in range(5):
-                    markup[0].append(InlineKeyboardButton(f"{show[count]}",
-                                                          callback_data=f"verify_{str(cb.from_user.id)}_{show[count]}"))
+                    markup[0].append(
+                        InlineKeyboardButton(
+                            f"{show[count]}",
+                            callback_data=f'verify_{cb.from_user.id}_{show[count]}',
+                        )
+                    )
+
                     count += 1
                 print("Appending to ROW - 2")
                 for _ in range(5):
-                    markup[1].append(InlineKeyboardButton(f"{show[count]}",
-                                                          callback_data=f"verify_{str(cb.from_user.id)}_{show[count]}"))
+                    markup[1].append(
+                        InlineKeyboardButton(
+                            f"{show[count]}",
+                            callback_data=f'verify_{cb.from_user.id}_{show[count]}',
+                        )
+                    )
+
                     count += 1
                 print("Appending to ROW - 3")
                 for _ in range(5):
-                    markup[2].append(InlineKeyboardButton(f"{show[count]}",
-                                                          callback_data=f"verify_{str(cb.from_user.id)}_{show[count]}"))
+                    markup[2].append(
+                        InlineKeyboardButton(
+                            f"{show[count]}",
+                            callback_data=f'verify_{cb.from_user.id}_{show[count]}',
+                        )
+                    )
+
                     count += 1
                 print("Setting Up in Database ...")
                 CaptchaDB[cb.from_user.id] = {
